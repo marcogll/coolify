@@ -1,0 +1,15 @@
+# Archivo: .gitignore
+# Descripción: Evita que archivos sensibles y directorios generados localmente se suban a Git.
+
+# Ignorar archivo de variables de entorno locales
+.env
+
+# Ignorar directorios de datos de Docker si se ejecutan localmente
+n8n_data/
+evolution_instances/
+postgres_data/
+evolution_redis/
+
+# Ignorar archivos del sistema operativo
+.DS_Store
+Thumbs.db
