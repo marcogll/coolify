@@ -1,6 +1,6 @@
 # Archivo: docker-compose.yaml
-# Version: 3.1 - PRODUCTION STABLE
-# Descripción: Versión final y estable con healthchecks optimizados para el arranque.
+# Version: 3.2 - PRODUCTION STABLE (Healthcheck Fix)
+# Descripción: Versión con healthcheck de PostgreSQL simplificado para máxima robustez.
 
 version: '3.8'
 
@@ -25,7 +25,7 @@ services:
       redis_cache:
         condition: service_started
       pg_database:
-        condition: service_healthy # Ajustado para esperar a la DB
+        condition: service_healthy
 
   pg_database:
     build:
@@ -36,11 +36,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      # --- CAMBIO CLAVE ---
+      # Se simplifica el test para comprobar únicamente que el servidor acepta
+      # conexiones para el usuario principal. Es más rápido y fiable.
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s # ¡LA LÍNEA MÁGICA!
+      start_period: 30s
 
   redis_cache:
     image: redis:7-alpine
