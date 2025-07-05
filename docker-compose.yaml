@@ -1,6 +1,7 @@
 # Archivo: docker-compose.yaml
-# Version: 2.0 - PRODUCTION READY
-# Descripción: Versión final y estable con todas las correcciones de sintaxis.
+# Version: 2.2 - PRODUCTION READY (Final Syntax Verified)
+# Descripción: Versión final con la sintaxis de volúmenes y dependencias corregida
+# para máxima compatibilidad y estabilidad.
 
 version: '3.8'
 
@@ -32,6 +33,7 @@ services:
     container_name: shared_postgres_db
     restart: always
     volumes:
+      - postgres_data:/var/lib/postgresql/data
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
