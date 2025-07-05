@@ -1,7 +1,6 @@
 # Archivo: docker-compose.yaml
-# Version: 3.0 - Custom Image Build
-# Descripción: Versión final que construye una imagen personalizada de PostgreSQL
-# para asegurar que el script de inicialización siempre esté presente.
+# Version: 3.1 - PRODUCTION STABLE
+# Descripción: Versión final y estable con healthchecks optimizados para el arranque.
 
 version: '3.8'
 
@@ -26,7 +25,7 @@ services:
       redis_cache:
         condition: service_started
       pg_database:
-        condition: service_healthy
+        condition: service_healthy # Ajustado para esperar a la DB
 
   pg_database:
     build:
@@ -41,7 +40,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-  
+      start_period: 30s # ¡LA LÍNEA MÁGICA!
+
   redis_cache:
     image: redis:7-alpine
     container_name: shared_redis_cache
