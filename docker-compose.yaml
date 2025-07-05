@@ -1,12 +1,11 @@
 # Archivo: docker-compose.yaml
-# Version: 1.6 - Final Syntax-Proof
-# Descripción: Versión final con la sintaxis de montaje de volúmenes corregida
-# para compatibilidad total con Coolify y Docker.
+# Version: 1.7 - DEBUGGING
+# Descripción: Versión para depuración SIN healthcheck en la base de datos.
+# Esto nos permitirá ver el error real de inicialización.
 
 version: '3.8'
 
 services:
-  #--- N8N SERVICE ---#
   n8n_app:
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: n8n_service
@@ -15,14 +14,8 @@ services:
       - n8n_data:/home/node/.n8n
     depends_on:
       pg_database:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+        condition: service_started # CAMBIO: Espera a que inicie, no a que esté saludable.
 
-  #--- EVOLUTION API SERVICE ---#
   evolution_api:
     image: atendai/evolution-api:latest
     container_name: evolution_api_service
@@ -33,21 +26,14 @@ services:
       - redis_cache
       - pg_database
 
-  #--- SHARED POSTGRESQL DATABASE ---#
   pg_database:
     image: postgres:16-alpine
     container_name: shared_postgres_db
     restart: always
     volumes:
-      # SINTAXIS CORREGIDA: Asegura que Coolify entienda esto como un montaje de archivo.
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-  
-  #--- SHARED REDIS CACHE ---#
+    # LA SECCIÓN healthcheck HA SIDO ELIMINADA DE AQUÍ PARA DEPURAR
+
   redis_cache:
     image: redis:7-alpine
     container_name: shared_redis_cache
@@ -58,10 +44,6 @@ services:
 
 volumes:
   n8n_data:
-    driver: local
   evolution_instances:
-    driver: local
   postgres_data:
-    driver: local
   evolution_redis:
-    driver: local
