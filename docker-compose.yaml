@@ -1,6 +1,7 @@
 # Archivo: docker-compose.yml
-# Version: 1.4 - Final Fix
-# Descripción: Corregido para asegurar que init-db.sh se monte como un archivo.
+# Version: 1.5 - Truly Clean
+# Descripción: Versión final sin NINGUNA variable de entorno hardcodeada,
+# dando control total a la interfaz de Coolify.
 
 version: '3.8'
 
@@ -37,12 +38,10 @@ services:
     image: postgres:16-alpine
     container_name: shared_postgres_db
     restart: always
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${N8N_DB_NAME}
+    # LA SECCIÓN 'environment' HA SIDO ELIMINADA DE AQUÍ.
+    # Coolify pasará las variables POSTGRES_* desde la UI.
     volumes:
-      # ESTA ES LA LÍNEA CRÍTICA: Asegura que el archivo se monte, no un directorio.
+      - postgres_data:/var/lib/postgresql/data
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
