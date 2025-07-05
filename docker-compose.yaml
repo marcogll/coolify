@@ -1,79 +1,47 @@
-# Archivo: docker-compose.yml
-# Version: unificada-1.2-coolify-ready
-# Descripción: Stack completo para n8n y Evolution API con servicios compartidos.
-# Optimizado para despliegue en Coolify a través de Git:
-# - Sin mapeo de puertos al host.
-# - Con sintaxis de healthcheck corregida.
+# Archivo: docker-compose.yml (con servicios renombrados)
 
 version: '3.8'
 
 services:
   #--- N8N SERVICE ---#
-  n8n:
+  n8n_app:  ## CAMBIO ##
     image: docker.n8n.io/n8nio/n8n:latest
     container_name: n8n_service
     restart: always
     environment:
-      # Las variables se cargarán desde la UI de Coolify
-      - N8N_HOST=${N8N_HOST}
-      - N8N_EDITOR_BASE_URL=${SERVICE_FQDN_N8N}
-      - WEBHOOK_URL=${SERVICE_FQDN_N8N}
-      - GENERIC_TIMEZONE=${TZ}
-      - TZ=${TZ}
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=postgres
-      - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_USER=${POSTGRES_USER}
-      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_POSTGRESDB_DATABASE=${N8N_DB_NAME}
-      - DB_POSTGRESDB_SCHEMA=public
-      - N8N_EMAIL_MODE=${N8N_EMAIL_MODE}
-      - N8N_SMTP_HOST=${N8N_SMTP_HOST}
-      - N8N_SMTP_PORT=${N8N_SMTP_PORT}
-      - N8N_SMTP_USER=${N8N_SMTP_USER}
-      - N8N_SMTP_PASS=${N8N_SMTP_PASS}
-      - N8N_SMTP_SENDER=${N8N_SMTP_SENDER}
-      - N8N_SMTP_SSL=${N8N_SMTP_SSL}
+      # ...
+      - DB_POSTGRESDB_HOST=pg_database  ## CAMBIO ## (Apuntando al nuevo nombre de la DB)
+      # ...
     volumes:
       - n8n_data:/home/node/.n8n
     depends_on:
-      postgres:
+      pg_database:  ## CAMBIO ##
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:5678/healthz || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+      # ... (sin cambios)
 
   #--- EVOLUTION API SERVICE ---#
-  api:
+  evolution_api:  ## CAMBIO ##
     image: atendai/evolution-api:latest
     container_name: evolution_api_service
     restart: always
     environment:
-      # Las variables se cargarán desde la UI de Coolify
-      - SERVER_URL=${SERVICE_FQDN_EVO}
-      - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
-      - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=postgres
-      - DB_POSTGRESDB_PORT=5432
-      - DB_POSTGRESDB_USER=${POSTGRES_USER}
-      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_POSTGRESDB_DATABASE=${EVOLUTION_DB_NAME}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${EVOLUTION_DB_NAME}
-      - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${EVOLUTION_DB_NAME}
-      - CHATWOOT_IMPORT_DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${EVOLUTION_DB_NAME}
+      # ...
+      - DB_POSTGRESDB_HOST=pg_database  ## CAMBIO ##
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pg_database:5432/${EVOLUTION_DB_NAME}  ## CAMBIO ##
+      - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pg_database:5432/${EVOLUTION_DB_NAME}  ## CAMBIO ##
+      - CHATWOOT_IMPORT_DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pg_database:5432/${EVOLUTION_DB_NAME}  ## CAMBIO ##
       - CACHE_REDIS_ENABLED=true
-      - CACHE_REDIS_URI=redis://redis:6379/6
-      # El resto de variables de Evolution (WEBHOOK_*, etc.) se gestionan en la UI
+      - CACHE_REDIS_URI=redis://redis_cache:6379/6  ## CAMBIO ## (Apuntando al nuevo nombre de Redis)
+      # ...
     volumes:
       - evolution_instances:/evolution/instances
     depends_on:
-      - redis
-      - postgres
+      - redis_cache  ## CAMBIO ##
+      - pg_database  ## CAMBIO ##
 
   #--- SHARED POSTGRESQL DATABASE ---#
-  postgres:
+  pg_database:  ## CAMBIO ##
     image: postgres:16-alpine
     container_name: shared_postgres_db
     restart: always
@@ -85,13 +53,10 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      # ... (sin cambios)
 
   #--- SHARED REDIS CACHE ---#
-  redis:
+  redis_cache:  ## CAMBIO ##
     image: redis:7-alpine
     container_name: shared_redis_cache
     restart: always
