@@ -1,0 +1,7 @@
+# Dockerfile.postgres
+# Usa la imagen oficial de PostgreSQL como base
+FROM postgres:16-alpine
+
+# Copia nuestro script de inicialización DENTRO de la imagen,
+# en el lugar exacto donde el entrypoint lo buscará.
+COPY init-db.sh /docker-entrypoint-initdb.d/init-db.sh
