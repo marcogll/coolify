@@ -1,6 +1,7 @@
 # Archivo: docker-compose.yaml
-# Version: 2.3 - Bulletproof Syntax
-# Descripción: Versión final con sintaxis de montaje de volúmenes explícita para máxima robustez.
+# Version: 3.0 - Custom Image Build
+# Descripción: Versión final que construye una imagen personalizada de PostgreSQL
+# para asegurar que el script de inicialización siempre esté presente.
 
 version: '3.8'
 
@@ -28,16 +29,15 @@ services:
         condition: service_healthy
 
   pg_database:
-    image: postgres:16-alpine
+    # ¡CAMBIO CLAVE! En lugar de 'image', usamos 'build'.
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
     container_name: shared_postgres_db
     restart: always
     volumes:
+      # El montaje del script ya no es necesario aquí
       - postgres_data:/var/lib/postgresql/data
-      # SINTAXIS EXPLÍCITA PARA ELIMINAR AMBIGÜEDAD
-      - type: bind
-        source: ./init-db.sh
-        target: /docker-entrypoint-initdb.d/init-db.sh
-        read_only: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
