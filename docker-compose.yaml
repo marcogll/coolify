@@ -1,7 +1,6 @@
 # Archivo: docker-compose.yaml
-# Version: 1.7 - DEBUGGING
-# Descripción: Versión para depuración SIN healthcheck en la base de datos.
-# Esto nos permitirá ver el error real de inicialización.
+# Version: 2.0 - PRODUCTION READY
+# Descripción: Versión final y estable con healthchecks restaurados.
 
 version: '3.8'
 
@@ -14,7 +13,7 @@ services:
       - n8n_data:/home/node/.n8n
     depends_on:
       pg_database:
-        condition: service_started # CAMBIO: Espera a que inicie, no a que esté saludable.
+        condition: service_healthy # Vuelve a esperar a que esté saludable
 
   evolution_api:
     image: atendai/evolution-api:latest
@@ -23,8 +22,9 @@ services:
     volumes:
       - evolution_instances:/evolution/instances
     depends_on:
-      - redis_cache
-      - pg_database
+      redis_cache: {}
+      pg_database:
+        condition: service_healthy # Vuelve a esperar a que esté saludable
 
   pg_database:
     image: postgres:16-alpine
@@ -32,8 +32,12 @@ services:
     restart: always
     volumes:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
-    # LA SECCIÓN healthcheck HA SIDO ELIMINADA DE AQUÍ PARA DEPURAR
-
+    healthcheck: # Healthcheck restaurado
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
   redis_cache:
     image: redis:7-alpine
     container_name: shared_redis_cache
