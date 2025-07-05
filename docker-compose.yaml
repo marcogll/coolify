@@ -29,14 +29,12 @@ services:
         condition: service_healthy
 
   pg_database:
-    # ¡CAMBIO CLAVE! En lugar de 'image', usamos 'build'.
     build:
       context: .
       dockerfile: Dockerfile.postgres
     container_name: shared_postgres_db
     restart: always
     volumes:
-      # El montaje del script ya no es necesario aquí
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
