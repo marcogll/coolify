@@ -68,3 +68,5 @@ Si un despliegue falla, el método más fiable es limpiar el estado anterior:
 1.  **Stop** la aplicación.
 2.  Ve a **Persistent Storage** y **elimina todos los volúmenes**.
 3.  **Redeploy**.
+
+4.  <!-- Forzando despliegue v4 -->
