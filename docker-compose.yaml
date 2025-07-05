@@ -40,7 +40,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s # ¡LA LÍNEA MÁGICA!
+      start_period: 60s # ¡LA LÍNEA MÁGICA!
 
   redis_cache:
     image: redis:7-alpine
