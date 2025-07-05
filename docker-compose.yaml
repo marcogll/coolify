@@ -1,7 +1,6 @@
 # Archivo: docker-compose.yaml
-# Version: 2.2 - PRODUCTION READY (Final Syntax Verified)
-# Descripción: Versión final con la sintaxis de volúmenes y dependencias corregida
-# para máxima compatibilidad y estabilidad.
+# Version: 2.3 - Bulletproof Syntax
+# Descripción: Versión final con sintaxis de montaje de volúmenes explícita para máxima robustez.
 
 version: '3.8'
 
@@ -34,7 +33,11 @@ services:
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
+      # SINTAXIS EXPLÍCITA PARA ELIMINAR AMBIGÜEDAD
+      - type: bind
+        source: ./init-db.sh
+        target: /docker-entrypoint-initdb.d/init-db.sh
+        read_only: true
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
